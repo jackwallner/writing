@@ -121,7 +121,7 @@ struct PaywallView: View {
 
     private func point(_ text: LocalizedStringKey) -> some View {
         Label { Text(text) } icon: {
-            Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Color.accentColor)
+            Image(systemName: "checkmark").font(.body.weight(.semibold)).foregroundStyle(Theme.accent)
         }
         .font(.body)
         .fixedSize(horizontal: false, vertical: true)
@@ -155,10 +155,10 @@ struct PaywallView: View {
             if option.term == .yearly, let saving {
                 Text("Save \(saving)%")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accent)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
-                    .background(Color.accentColor.opacity(0.14), in: Capsule())
+                    .background(Theme.accent.opacity(0.14), in: Capsule())
             }
         }
         let detail = Text(option.detail).font(.subheadline).foregroundStyle(Theme.secondary)
@@ -217,7 +217,7 @@ struct PaywallView: View {
                 .padding(.horizontal, 16)
                 .foregroundStyle(Theme.onAccent)
                 .frame(maxWidth: .infinity, minHeight: 54)
-                .background(Color.accentColor, in: Capsule())
+                .background(Theme.accent, in: Capsule())
             }
             .disabled(working)
             .accessibilityIdentifier("paywall.buy")

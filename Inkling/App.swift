@@ -16,7 +16,7 @@ struct InklingApp: App {
     var body: some Scene {
         WindowGroup {
             TodayView()
-                .tint(Color.accentColor)
+                .tint(Theme.accent)
         }
     }
 }

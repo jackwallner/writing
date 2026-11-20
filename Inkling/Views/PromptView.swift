@@ -98,8 +98,7 @@ struct PromptView: View {
                 save()
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } label: {
-                Label("Wrote It", systemImage: "checkmark.circle")
-                    .labelStyle(.titleAndIcon)
+                Text("Wrote It").fontWeight(.semibold)
             }
             .accessibilityIdentifier("prompt.mark")
         }

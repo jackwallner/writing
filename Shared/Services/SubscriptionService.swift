@@ -17,7 +17,7 @@ enum Links {
     static let terms = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
     static let support = URL(string: "https://jackwallner.github.io/writing/support.html")!
     static let writeReview = URL(string: "https://apps.apple.com/app/id6837382731?action=write-review")!
-    static let feedback = URL(string: "mailto:jackwallner@gmail.com?subject=Inkling%20feedback")!
+    static let feedback = URL(string: "mailto:jackwallner+ink@gmail.com?subject=Inkling%20feedback")!
 }
 
 /// One way to buy the library: a subscription, or a single payment.

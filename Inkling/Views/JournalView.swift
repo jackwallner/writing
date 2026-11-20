@@ -52,7 +52,6 @@ struct JournalView: View {
                 .font(Theme.serif(.title, weight: .semibold))
                 .foregroundStyle(Theme.ink)
                 .monospacedDigit()
-                .accessibilityIdentifier(id)
             Text(label)
                 .font(.footnote)
                 .foregroundStyle(Theme.secondary)
@@ -64,6 +63,7 @@ struct JournalView: View {
         .background(Theme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay { RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.rule, lineWidth: 1) }
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier(id)
     }
 }
 

@@ -80,7 +80,7 @@ struct DayView: View {
             if entry.text.isEmpty {
                 Label("Written elsewhere", systemImage: "checkmark")
                     .font(.footnote.weight(.semibold))
-                    .foregroundStyle(Color.accentColor)
+                    .foregroundStyle(Theme.accent)
             } else {
                 Text(entry.text)
                     .font(Theme.serif(.body))

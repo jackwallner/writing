@@ -116,7 +116,7 @@ struct PromptCard: View {
                 if let entry, entry.counts {
                     Label(entry.words > 0 ? String(localized: "\(entry.words) words") : String(localized: "Written"), systemImage: "checkmark")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(Theme.accent)
                 }
             }
             .padding(18)
@@ -190,9 +190,9 @@ struct DayMark: View {
             }
             ZStack {
                 Circle()
-                    .fill(written ? Color.accentColor : Color.clear)
+                    .fill(written ? Theme.accent : Color.clear)
                 Circle()
-                    .strokeBorder(isToday && !written ? Color.accentColor : Theme.rule, lineWidth: isToday && !written ? 2 : 1)
+                    .strokeBorder(isToday && !written ? Theme.accent : Theme.rule, lineWidth: isToday && !written ? 2 : 1)
                     .opacity(written ? 0 : 1)
                 if written {
                     Image(systemName: "checkmark")

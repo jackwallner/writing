@@ -9,6 +9,8 @@ enum Theme {
     static let secondary = Color(light: 0x6E665C, dark: 0xA39A8D)
     static let rule = Color(light: 0xE4DDD1, dark: 0x3A352F)
     static let onAccent = Color(light: 0xFFFDF8, dark: 0x1B1916)
+    /// Ink blue.
+    static let accent = Color(light: 0x334F73, dark: 0xA3BAD9)
 
     /// The serif voice for prompts and headings.
     static func serif(_ style: Font.TextStyle, weight: Font.Weight = .regular) -> Font {
