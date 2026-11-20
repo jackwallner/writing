@@ -1,0 +1,107 @@
+{
+  "appPolicies": {
+    "eula": "",
+    "policies": [
+      {
+        "locale": "en_US",
+        "policyText": "",
+        "policyURL": ""
+      }
+    ]
+  },
+  "identifier": "1A2B3C4D",
+  "nonRenewingSubscriptions": [],
+  "products": [
+    {
+      "displayPrice": "29.99",
+      "familyShareable": false,
+      "internalID": "C7D8E9F0",
+      "localizations": [
+        {
+          "description": "Inkling Pro, for good. One payment.",
+          "displayName": "Inkling Pro Lifetime",
+          "locale": "en_US"
+        }
+      ],
+      "productID": "com.jackwallner.writing.lifetime",
+      "referenceName": "Inkling Pro Lifetime",
+      "type": "NonConsumable"
+    }
+  ],
+  "subscriptionGroups": [
+    {
+      "id": "D1552CB1",
+      "localizations": [],
+      "name": "Inkling Pro",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "1.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "FDDF60F2",
+          "localizations": [
+            {
+              "description": "Every day's prompts and export.",
+              "displayName": "Inkling Pro Monthly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.jackwallner.writing.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Inkling Pro Monthly",
+          "subscriptionGroupID": "D1552CB1",
+          "type": "RecurringSubscription",
+          "winbackOffers": [],
+          "introductoryOffer": {
+            "internalID": "A1B2C3D2",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
+          }
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "14.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "99EBAE47",
+          "localizations": [
+            {
+              "description": "Every day's prompts and export.",
+              "displayName": "Inkling Pro Yearly",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.jackwallner.writing.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Inkling Pro Yearly",
+          "subscriptionGroupID": "D1552CB1",
+          "type": "RecurringSubscription",
+          "winbackOffers": [],
+          "introductoryOffer": {
+            "internalID": "A1B2C3D1",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
+          }
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 4,
+    "minor": 0
+  },
+  "settings": {
+    "_applicationInternalID": "6837382731",
+    "_developerTeamID": "YXG4MP6W39",
+    "_failTransactionsEnabled": false,
+    "_lastSynchronizedDate": 0,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  }
+}
