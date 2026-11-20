@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import random
 import subprocess
 import time
 import urllib.request
@@ -44,6 +45,9 @@ def fetch(item: dict) -> bool:
 def main() -> None:
     PREVIEW.mkdir(parents=True, exist_ok=True)
     items = json.loads(CANDIDATES.read_text())
+    # The same order and limit tools/write_prompts.py reviews.
+    random.Random(7).shuffle(items)
+    items = items[:1650]
     with ThreadPoolExecutor(max_workers=4) as pool:
         results = list(pool.map(fetch, items))
     print(f"{sum(results)} of {len(items)} artworks on disk", flush=True)
