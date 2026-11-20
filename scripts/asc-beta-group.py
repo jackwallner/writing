@@ -9,7 +9,6 @@ sys.path.insert(0, str(Path(__file__).parent))
 import asc_lib
 
 BUNDLE = "com.jackwallner.writing"
-JACK_TESTER = "79e15078-d36d-4943-8b7b-a26013e201ce"
 
 
 def main() -> None:
@@ -22,11 +21,24 @@ def main() -> None:
             "name": "Jack", "isInternalGroup": True, "hasAccessToAllBuilds": True,
         }, "relationships": {"app": {"data": {"type": "apps", "id": app["id"]}}}}})["data"]
         print("group created")
-    testers = {t["id"] for t in asc_lib.list_all(c, f"/betaGroups/{group['id']}/betaTesters")}
-    if JACK_TESTER not in testers:
-        c.post(f"/betaGroups/{group['id']}/relationships/betaTesters", {"data": [{"type": "betaTesters", "id": JACK_TESTER}]})
+    # Jack is the account holder, the one App Store Connect user with the ACCOUNT_HOLDER role.
+    jack = next(u["attributes"] for u in c.get("/users?limit=200")["data"]
+                if "ACCOUNT_HOLDER" in u["attributes"]["roles"])
+    members = {t["attributes"]["email"] for t in asc_lib.list_all(c, f"/betaGroups/{group['id']}/betaTesters")}
+    if jack["username"] not in members:
+        c.post("/betaTesters", {"data": {"type": "betaTesters", "attributes": {
+            "email": jack["username"], "firstName": jack["firstName"], "lastName": jack["lastName"],
+        }, "relationships": {"betaGroups": {"data": [{"type": "betaGroups", "id": group["id"]}]}}}})
         print("Jack added")
-    print("group Jack ready")
+    # Adding a tester to a group sends no email; an invitation does, once a build exists.
+    builds = c.get(f"/builds?filter[app]={app['id']}&filter[processingState]=VALID&limit=1")["data"]
+    for t in asc_lib.list_all(c, f"/betaGroups/{group['id']}/betaTesters"):
+        if builds and t["attributes"].get("state") == "NOT_INVITED":
+            c.post("/betaTesterInvitations", {"data": {"type": "betaTesterInvitations", "relationships": {
+                "app": {"data": {"type": "apps", "id": app["id"]}},
+                "betaTester": {"data": {"type": "betaTesters", "id": t["id"]}}}}})
+            print("Jack invited")
+    print("group Jack ready" if builds else "group Jack ready; no processed build yet, rerun to invite")
 
 
 if __name__ == "__main__":
