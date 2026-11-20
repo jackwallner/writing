@@ -1,0 +1,12 @@
+[
+{"id": 13892, "keep": true, "prompt": "The man leading the donkey has walked this road many times with his dog and sheep. Describe the journey from his side, step by step, and what he thinks about.", "form": "pov", "reason": ""},
+{"id": 121403, "keep": true, "prompt": "The woman in the striped blouse has glanced over her shoulder as if someone just called her name. Who is it, and what do they say?", "form": "dialogue", "reason": ""},
+{"id": 93780, "keep": true, "prompt": "The man in the red coat holds a small book and a folded paper. Write the letter he is about to read, or the one he has just finished writing.", "form": "letter", "reason": ""},
+{"id": 223802, "keep": false, "prompt": "", "form": "", "reason": "religious scene, popes and saints"},
+{"id": 104473, "keep": true, "prompt": "Write about a festival or fair you remember, with the crowds, the sounds and the food. Where were you standing, and who was beside you?", "form": "memory", "reason": ""},
+{"id": 204585, "keep": true, "prompt": "Three thin trees lean together on a small island, with a little roofed hut nearby. Write a short poem about a quiet place you would choose to sit all afternoon.", "form": "poem", "reason": ""},
+{"id": 114319, "keep": true, "prompt": "The moon is up, the boats are in, and the fishermen are talking quietly on the shore. Write what they are saying to one another.", "form": "dialogue", "reason": ""},
+{"id": 204607, "keep": false, "prompt": "", "form": "", "reason": "calligraphy text only, nothing visual to write from"},
+{"id": 11701, "keep": true, "prompt": "A tiny portrait set in sparkling stones was made to be carried close. Make a list of small keepsakes you have held onto, and why each one stayed.", "form": "list", "reason": ""},
+{"id": 7489, "keep": false, "prompt": "", "form": "", "reason": "too dark and murky, stiff formal portrait"}
+]
