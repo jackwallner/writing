@@ -20,6 +20,8 @@ REVIEW = ROOT / "catalog" / "review"
 ART = ROOT / "Inkling" / "Art"
 OUT = ROOT / "Inkling" / "prompts.json"
 MIN_DAYS = 366
+# About 50 KB of art a prompt: 400 days keeps the app near 60 MB.
+MAX_DAYS = 400
 BANNED = re.compile(r"[—–;!]|this painting|this image|\bimagine\b.*\bimagine\b", re.I)
 
 
@@ -46,7 +48,7 @@ def main() -> None:
                 continue
             seen.add(art_id)
             kept.append({**meta[art_id], "prompt": text, "form": row.get("form") or "story"})
-    days = len(kept) // 3
+    days = min(len(kept) // 3, MAX_DAYS)
     print(f"{len(kept)} kept, {days} days")
     if days < MIN_DAYS:
         raise SystemExit(f"need {MIN_DAYS * 3} prompts for a year, have {len(kept)}")
@@ -80,7 +82,7 @@ def main() -> None:
     for index, item in enumerate(ordered):
         name = f"aic-{item['id']}"
         subprocess.run(
-            ["sips", "-s", "format", "heic", "-s", "formatOptions", "60", "-Z", "900",
+            ["sips", "-s", "format", "heic", "-s", "formatOptions", "55", "-Z", "843",
              str(RAW / f"{item['id']}.jpg"), "--out", str(ART / f"{name}.heic")],
             capture_output=True, check=True,
         )

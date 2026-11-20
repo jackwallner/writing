@@ -5,7 +5,7 @@ daily writing app, and write one prompt for each one kept.
 Runs `claude -p` once per batch of artworks, a few batches at a time, and writes
 catalog/review/batch-NNN.json. Finished batches are skipped on a rerun.
 
-  python3 tools/write_prompts.py [--batch 40] [--parallel 3] [--model sonnet]
+  python3 tools/write_prompts.py [--batch 40] [--parallel 3] [--model sonnet] [--limit 1650]
 """
 from __future__ import annotations
 
@@ -92,11 +92,13 @@ def main() -> None:
     parser.add_argument("--batch", type=int, default=40)
     parser.add_argument("--parallel", type=int, default=3)
     parser.add_argument("--model", default="sonnet")
+    parser.add_argument("--limit", type=int, default=1650, help="artworks to review; about 80% are kept")
     args = parser.parse_args()
     REVIEW.mkdir(parents=True, exist_ok=True)
     items = [item for item in json.loads(CANDIDATES.read_text()) if (PREVIEW / f"{item['id']}.jpg").exists()]
     # Mixed batches give the writer paintings, photographs and prints side by side to vary the forms against.
     random.Random(7).shuffle(items)
+    items = items[:args.limit]
     groups = batches(items, args.batch)
     print(f"{len(items)} artworks in {len(groups)} batches", flush=True)
     with ThreadPoolExecutor(max_workers=args.parallel) as pool:
