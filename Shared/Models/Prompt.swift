@@ -10,6 +10,11 @@ struct Prompt: Codable, Identifiable, Hashable, Sendable {
     let artist: String
     let date: String?
 
+    /// "Artist, Date" for the plaque, leaving out a date nobody knows.
+    var maker: String {
+        [artist, date].compactMap { $0 }.filter { !$0.isEmpty && $0 != "n.d." }.joined(separator: ", ")
+    }
+
     /// "Title, Artist, Date" for the credit under the image.
     var credit: String {
         [title, artist, date].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: ", ")
@@ -30,7 +35,7 @@ struct PromptLibrary: Sendable {
     }
 
     static let bundled: PromptLibrary = {
-        guard let url = Bundle.main.url(forResource: "prompts", withExtension: "json"),
+        guard let url = Bundle.app.url(forResource: "prompts", withExtension: "json"),
               let data = try? Data(contentsOf: url),
               let prompts = try? JSONDecoder().decode([Prompt].self, from: data) else {
             return PromptLibrary(prompts: [])

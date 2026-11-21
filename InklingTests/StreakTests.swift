@@ -156,3 +156,52 @@ final class ReviewPromptTests: XCTestCase {
         XCTAssertFalse(review.shouldAsk(now: .now.addingTimeInterval(86_400 * 31)))
     }
 }
+
+final class PaletteTests: XCTestCase {
+    func testRoomIsDeepAtNightAndPaleByDay() {
+        let vivid = Palette(cells: Array(repeating: SIMD3(0.9, 0.2, 0.1), count: 9))
+        for color in vivid.room(dark: true) { XCTAssertLessThan(color.max(), 0.36, "white text must read on the night room") }
+        for color in vivid.room(dark: false) { XCTAssertGreaterThan(color.min(), 0.55, "ink must read on the day room") }
+    }
+
+    func testColorRoundTrips() {
+        let color = SIMD3(0.31, 0.62, 0.48)
+        let (hue, saturation, brightness) = Palette.hsb(color)
+        let back = Palette.rgb(hue, saturation, brightness)
+        XCTAssertEqual(back.x, color.x, accuracy: 0.001)
+        XCTAssertEqual(back.y, color.y, accuracy: 0.001)
+        XCTAssertEqual(back.z, color.z, accuracy: 0.001)
+    }
+
+    func testGreyWorkHasNoAccent() {
+        XCTAssertNil(Palette(cells: Array(repeating: SIMD3(0.5, 0.5, 0.5), count: 9)).accent(dark: true))
+    }
+
+    func testMuseTidiesAnAnswer() {
+        XCTAssertEqual(Muse.tidy("\"What did the room smell like?\"\nMore."), "What did the room smell like?")
+        XCTAssertNil(Muse.tidy("  \n"))
+    }
+}
+
+@MainActor
+final class BookTests: XCTestCase {
+    func testBookHasACoverAndAPageForEachPiece() throws {
+        let library = PromptLibrary.bundled
+        let journal = Journal(file: nil)
+        let long = Array(repeating: "The lamp was still warm when I came back to it, and the room had kept my place.", count: 90).joined(separator: " ")
+        journal.save(JournalEntry(day: "2026-11-18", promptID: library.prompts[0].id, text: "One line."))
+        journal.save(JournalEntry(day: "2026-11-19", promptID: library.prompts[1].id, text: long))
+        journal.save(JournalEntry(day: "2026-11-20", promptID: library.prompts[2].id, elsewhere: true))
+        let url = try Book.write(journal: journal, library: library)
+        let document = try XCTUnwrap(CGPDFDocument(url as CFURL))
+        XCTAssertGreaterThanOrEqual(document.numberOfPages, 5, "cover, three pieces, and the long one runs on")
+    }
+
+    func testShareCardRenders() throws {
+        let prompt = PromptLibrary.bundled.prompts[0]
+        let data = try ShareCard(prompt: prompt, text: "The boat was older than the dock.").png()
+        let image = try XCTUnwrap(UIImage(data: data))
+        XCTAssertEqual(image.size.width, 1080)
+        XCTAssertEqual(image.size.height, 1350)
+    }
+}

@@ -81,6 +81,30 @@ final class InklingUITests: XCTestCase {
         XCTAssertTrue(app.buttons["paywall.buy"].waitForExistence(timeout: 5))
     }
 
+    func testPaintingOpensFullScreen() {
+        let app = launch()
+        openFirstPrompt(app)
+        let art = app.descendants(matching: .any)["prompt.art"].firstMatch
+        XCTAssertTrue(art.waitForExistence(timeout: 5))
+        art.tap()
+        let close = app.buttons["viewer.close"]
+        XCTAssertTrue(close.waitForExistence(timeout: 5))
+        close.tap()
+        XCTAssertTrue(app.buttons["prompt.mark"].waitForExistence(timeout: 5))
+    }
+
+    func testTimerCountsDown() {
+        let app = launch()
+        openFirstPrompt(app)
+        let menu = app.buttons["prompt.timerMenu"]
+        XCTAssertTrue(menu.waitForExistence(timeout: 5))
+        menu.tap()
+        let five = app.buttons["5 minutes"]
+        XCTAssertTrue(five.waitForExistence(timeout: 5))
+        five.tap()
+        XCTAssertTrue(app.staticTexts["prompt.timer"].waitForExistence(timeout: 5))
+    }
+
     func testSettingsOpensPaywall() {
         let app = launch(["-MockProducts"])
         app.buttons["today.settings"].tap()
@@ -106,29 +130,53 @@ final class ScreenCaptureUITests: XCTestCase {
         app.launchArguments = ["-UITesting", "-SeedDemo", "-MockProducts"]
         app.launch()
         XCTAssertTrue(app.buttons["today.prompt"].firstMatch.waitForExistence(timeout: 5))
-        sleep(1)
+        sleep(2)
         shot(app, "1-today")
+        app.swipeLeft()
+        sleep(2)
+        shot(app, "2-today-second")
+        app.swipeRight()
+        sleep(1)
 
         app.buttons["today.prompt"].firstMatch.tap()
         let editor = app.textViews["prompt.editor"].exists ? app.textViews["prompt.editor"] : app.textFields["prompt.editor"]
         XCTAssertTrue(editor.waitForExistence(timeout: 5))
-        shot(app, "2-prompt")
+        sleep(1)
+        shot(app, "3-prompt")
+        app.descendants(matching: .any)["prompt.art"].firstMatch.tap()
+        XCTAssertTrue(app.buttons["viewer.close"].waitForExistence(timeout: 5))
+        sleep(1)
+        shot(app, "4-viewer")
+        app.buttons["viewer.close"].tap()
+        sleep(1)
         editor.tap()
         editor.typeText("The light came in sideways that morning, and I stood at the sink longer than I meant to.")
-        shot(app, "3-writing")
+        sleep(1)
+        shot(app, "5-writing")
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(2)
+        shot(app, "6-today-written")
 
         app.buttons["today.week"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["journal.current"].waitForExistence(timeout: 5))
-        sleep(1)
-        shot(app, "4-calendar")
+        sleep(2)
+        shot(app, "7-calendar")
+        let yesterday = Calendar.current.date(byAdding: .day, value: -1, to: .now)!
+        app.buttons[yesterday.formatted(.dateTime.weekday(.wide).month(.wide).day())].tap()
+        XCTAssertTrue(app.buttons["day.prompt"].firstMatch.waitForExistence(timeout: 5))
+        sleep(2)
+        shot(app, "8-day")
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(1)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        sleep(1)
 
         app.buttons["today.settings"].tap()
-        shot(app, "5-settings")
+        XCTAssertTrue(app.buttons["settings.pro"].waitForExistence(timeout: 5))
+        shot(app, "9-settings")
         app.buttons["settings.pro"].tap()
         XCTAssertTrue(app.buttons["paywall.buy"].waitForExistence(timeout: 5))
-        sleep(1)
-        shot(app, "6-paywall")
+        sleep(2)
+        shot(app, "10-paywall")
     }
 }

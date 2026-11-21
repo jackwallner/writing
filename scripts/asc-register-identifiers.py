@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Register Inkling's bundle ID and turn on In-App Purchase. Safe to rerun."""
+"""Register Inkling's bundle IDs and turn on In-App Purchase. Safe to rerun."""
 from __future__ import annotations
 
 import sys
@@ -11,6 +11,7 @@ import asc_lib
 
 IDENTIFIERS = {
     "com.jackwallner.writing": ("Inkling", {"IN_APP_PURCHASE"}),
+    "com.jackwallner.writing.widget": ("Inkling Widget", set()),
 }
 
 

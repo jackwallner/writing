@@ -35,6 +35,18 @@ final class Journal {
         entries.first { $0.day == day && $0.promptID == promptID }
     }
 
+    /// The artwork each written day was written to, by day key. A day with several keeps its first.
+    func artByDay(library: PromptLibrary) -> [String: String] {
+        var result: [String: String] = [:]
+        for entry in entries.filter(\.counts).sorted(by: { $0.created < $1.created }) where result[entry.day] == nil {
+            result[entry.day] = library.prompt(id: entry.promptID)?.art
+        }
+        return result
+    }
+
+    /// Every word written here.
+    var totalWords: Int { entries.reduce(0) { $0 + $1.words } }
+
     func isWritten(_ day: Date) -> Bool { writtenDays.contains(Days.key(day)) }
 
     func currentStreak(today: Date = .now) -> Int { Streak.current(written: writtenDays, today: today) }

@@ -3,12 +3,12 @@ import UIKit
 
 /// Paper and ink.
 enum Theme {
-    static let paper = Color(light: 0xF6F2EA, dark: 0x1B1916)
-    static let card = Color(light: 0xFFFDF8, dark: 0x26231F)
-    static let ink = Color(light: 0x23201C, dark: 0xEFEAE1)
+    static let paper = Color(light: 0xF6F2EA, dark: 0x161412)
+    static let card = Color(light: 0xFFFDF8, dark: 0x221F1B)
+    static let ink = Color(light: 0x23201C, dark: 0xF1ECE3)
     static let secondary = Color(light: 0x6E665C, dark: 0xA39A8D)
-    static let rule = Color(light: 0xE4DDD1, dark: 0x3A352F)
-    static let onAccent = Color(light: 0xFFFDF8, dark: 0x1B1916)
+    static let rule = Color(light: 0xE4DDD1, dark: 0x35302A)
+    static let onAccent = Color(light: 0xFFFDF8, dark: 0x161412)
     /// Ink blue.
     static let accent = Color(light: 0x334F73, dark: 0xA3BAD9)
 
@@ -17,18 +17,25 @@ enum Theme {
         .system(style, design: .serif, weight: weight)
     }
 
+    /// A serif numeral at a fixed size, for the streak.
+    static func numeral(_ size: CGFloat) -> Font {
+        .system(size: size, weight: .medium, design: .serif)
+    }
+
+    /// The plaque voice: small, wide capitals.
+    static func caps(_ style: Font.TextStyle = .caption2) -> Font {
+        .system(style, weight: .semibold).width(.expanded)
+    }
+
     static func applyNavigationAppearance() {
         let ink = UIColor(Theme.ink)
         let serif = UIFont.systemFont(ofSize: 17, weight: .semibold).withDesign(.serif)
         let large = UIFont.systemFont(ofSize: 34, weight: .semibold).withDesign(.serif)
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.backgroundColor = UIColor(Theme.paper)
-        appearance.titleTextAttributes = [.foregroundColor: ink, .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: serif)]
-        appearance.largeTitleTextAttributes = [.foregroundColor: ink, .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
-        UINavigationBar.appearance().standardAppearance = appearance
-        UINavigationBar.appearance().scrollEdgeAppearance = appearance
-        UINavigationBar.appearance().compactAppearance = appearance
+        let title: [NSAttributedString.Key: Any] = [.foregroundColor: ink, .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: serif)]
+        let largeTitle: [NSAttributedString.Key: Any] = [.foregroundColor: ink, .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large)]
+        // Only the title's voice is set; the bar itself stays the system's, so it is glass where the system has glass.
+        UINavigationBar.appearance().titleTextAttributes = title
+        UINavigationBar.appearance().largeTitleTextAttributes = largeTitle
     }
 }
 
@@ -51,44 +58,34 @@ extension Color {
             )
         })
     }
-}
 
-/// Loads bundled artwork, downsampled to the size it is drawn at, and keeps it.
-@MainActor
-enum Art {
-    private static let cache = NSCache<NSString, UIImage>()
-
-    static func image(_ name: String) -> UIImage? {
-        if let cached = cache.object(forKey: name as NSString) { return cached }
-        guard let url = Bundle.main.url(forResource: name, withExtension: "heic", subdirectory: "Art")
-            ?? Bundle.main.url(forResource: name, withExtension: "jpg", subdirectory: "Art"),
-            let image = UIImage(contentsOfFile: url.path) else { return nil }
-        let prepared = image.preparingForDisplay() ?? image
-        cache.setObject(prepared, forKey: name as NSString)
-        return prepared
+    init(_ rgb: SIMD3<Double>) {
+        self.init(red: rgb.x, green: rgb.y, blue: rgb.z)
     }
 }
 
-/// An artwork filling its frame, with paper showing while it loads.
-struct ArtView: View {
-    let name: String
-    @State private var image: UIImage?
+extension View {
+    /// Glass where the system has it, a thin material before that.
+    @ViewBuilder
+    func glass(in shape: some Shape = Capsule(), interactive: Bool = false) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect(interactive ? .regular.interactive() : .regular, in: shape)
+        } else {
+            background(.ultraThinMaterial, in: shape)
+        }
+    }
 
-    var body: some View {
-        Rectangle()
-            .fill(Theme.rule)
-            .overlay {
-                if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .transition(.opacity)
-                }
-            }
-            .clipped()
-            .task(id: name) {
-                if image == nil { image = Art.image(name) }
-            }
-            .accessibilityHidden(true)
+    /// Small wide capitals.
+    func plaque(_ style: Font.TextStyle = .caption2) -> some View {
+        font(Theme.caps(style)).textCase(.uppercase).kerning(1.1)
+    }
+}
+
+/// A button that sinks a little under the finger.
+struct PressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(duration: 0.25), value: configuration.isPressed)
     }
 }
