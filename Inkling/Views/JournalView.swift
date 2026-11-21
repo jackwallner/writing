@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// Every month with its checked days, newest first, under the streak numbers.
+/// The streak, then every month as a wall of the paintings written to, newest first.
 struct JournalView: View {
     let today: Date
     @Binding var path: [Route]
     private let journal = Journal.shared
+    private let library = PromptLibrary.bundled
 
     /// The first day of each month from the earliest writing (or this month) to now, newest first.
     private var months: [Date] {
@@ -22,16 +23,12 @@ struct JournalView: View {
     }
 
     var body: some View {
-        let written = journal.writtenDays
+        let art = journal.artByDay(library: library)
         ScrollView {
-            VStack(alignment: .leading, spacing: 32) {
-                HStack(alignment: .top, spacing: 12) {
-                    stat(journal.currentStreak(today: today), "Day streak", id: "journal.current")
-                    stat(journal.longestStreak, "Longest", id: "journal.longest")
-                    stat(written.count, "Days written", id: "journal.total")
-                }
+            VStack(alignment: .leading, spacing: 40) {
+                summary(days: art.count)
                 ForEach(months, id: \.self) { month in
-                    MonthGrid(month: month, today: today, written: written) { day in
+                    MonthWall(month: month, today: today, art: art, written: journal.writtenDays) { day in
                         path.append(.day(Days.key(day)))
                     }
                 }
@@ -44,33 +41,71 @@ struct JournalView: View {
         .background(Theme.paper)
         .navigationTitle("Calendar")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Calendar").font(Theme.serif(.headline, weight: .semibold)).foregroundStyle(Theme.ink)
+            }
+        }
+    }
+
+    private func summary(days: Int) -> some View {
+        let streak = journal.currentStreak(today: today)
+        return VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: -4) {
+                Text(streak, format: .number)
+                    .font(Theme.numeral(104))
+                    .foregroundStyle(Theme.ink)
+                    .minimumScaleFactor(0.5)
+                    .lineLimit(1)
+                Text("day streak")
+                    .plaque(.caption)
+                    .foregroundStyle(Theme.secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("journal.current")
+            HStack(alignment: .top, spacing: 0) {
+                stat(journal.longestStreak, "Longest", id: "journal.longest")
+                divider
+                stat(journal.writtenDays.count, "Days", id: "journal.total")
+                divider
+                stat(journal.totalWords, "Words", id: "journal.words")
+            }
+            .padding(.vertical, 16)
+            .overlay(alignment: .top) { Rectangle().fill(Theme.rule).frame(height: 1) }
+            .overlay(alignment: .bottom) { Rectangle().fill(Theme.rule).frame(height: 1) }
+        }
+        .padding(.top, 4)
+    }
+
+    private var divider: some View {
+        Rectangle().fill(Theme.rule).frame(width: 1, height: 40).padding(.horizontal, 16)
     }
 
     private func stat(_ value: Int, _ label: LocalizedStringKey, id: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(value, format: .number)
-                .font(Theme.serif(.title, weight: .semibold))
+                .font(Theme.serif(.title2, weight: .medium))
                 .foregroundStyle(Theme.ink)
                 .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Text(label)
-                .font(.footnote)
+                .plaque()
                 .foregroundStyle(Theme.secondary)
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Theme.card, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay { RoundedRectangle(cornerRadius: 14, style: .continuous).strokeBorder(Theme.rule, lineWidth: 1) }
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier(id)
     }
 }
 
-/// One month as a grid of day circles.
-struct MonthGrid: View {
+/// One month: each written day is a tile of its painting, the rest are plain numbers.
+struct MonthWall: View {
     let month: Date
     let today: Date
+    let art: [String: String]
     let written: Set<String>
     let open: (Date) -> Void
 
@@ -91,32 +126,84 @@ struct MonthGrid: View {
     }
 
     var body: some View {
-        let columns = Array(repeating: GridItem(.flexible(), spacing: 4), count: 7)
-        VStack(alignment: .leading, spacing: 12) {
-            Text(month.formatted(.dateTime.month(.wide).year()))
-                .font(Theme.serif(.title3, weight: .semibold))
-                .foregroundStyle(Theme.ink)
-                .accessibilityAddTraits(.isHeader)
-            LazyVGrid(columns: columns, spacing: 8) {
+        let columns = Array(repeating: GridItem(.flexible(), spacing: 5), count: 7)
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                Text(month.formatted(.dateTime.month(.wide)))
+                    .font(Theme.serif(.title2, weight: .semibold))
+                    .foregroundStyle(Theme.ink)
+                Text(month.formatted(.dateTime.year()))
+                    .plaque(.caption)
+                    .foregroundStyle(Theme.secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
+            LazyVGrid(columns: columns, spacing: 5) {
                 ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(.caption.weight(.medium))
+                        .plaque()
                         .foregroundStyle(Theme.secondary)
+                        .padding(.bottom, 2)
                         .accessibilityHidden(true)
                 }
                 ForEach(Array(cells.enumerated()), id: \.offset) { _, day in
                     if let day {
+                        let key = Days.key(day)
                         let isFuture = Days.calendar.startOfDay(for: day) > Days.calendar.startOfDay(for: today)
                         Button { open(day) } label: {
-                            DayMark(day: day, today: today, written: written.contains(Days.key(day)), label: .number)
+                            DayTile(day: day, isToday: key == Days.key(today), isFuture: isFuture, written: written.contains(key), art: art[key])
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(PressStyle())
                         .disabled(isFuture)
                     } else {
-                        Color.clear.frame(height: 34)
+                        Color.clear.aspectRatio(1, contentMode: .fit)
                     }
                 }
             }
         }
+    }
+}
+
+/// One day on the wall.
+struct DayTile: View {
+    let day: Date
+    let isToday: Bool
+    let isFuture: Bool
+    let written: Bool
+    let art: String?
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 9, style: .continuous)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                if written {
+                    if let art {
+                        ArtView(name: art, size: .tile)
+                            .overlay(alignment: .bottomLeading) {
+                                LinearGradient(colors: [.clear, .black.opacity(0.55)], startPoint: .center, endPoint: .bottom)
+                            }
+                    } else {
+                        Theme.ink
+                    }
+                } else if !isFuture {
+                    Theme.card
+                }
+            }
+            .clipShape(shape)
+            .overlay(alignment: written ? .bottomLeading : .center) {
+                Text(day.formatted(.dateTime.day()))
+                    .font(written ? .caption2.weight(.bold) : .footnote)
+                    .monospacedDigit()
+                    .foregroundStyle(written ? Color.white : isFuture ? Theme.secondary.opacity(0.45) : Theme.ink)
+                    .padding(written ? 5 : 0)
+            }
+            .overlay {
+                if isToday { shape.strokeBorder(Theme.ink, lineWidth: 1.5) }
+            }
+            .contentShape(shape)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(day.formatted(.dateTime.weekday(.wide).month(.wide).day()))
+            .accessibilityValue(written ? String(localized: "Written") : "")
     }
 }

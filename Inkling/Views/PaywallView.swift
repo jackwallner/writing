@@ -20,7 +20,7 @@ struct PaywallView: View {
         // indicator, so no text size or language can push the price or the purchase off screen.
         ScrollView {
             VStack(spacing: 20) {
-                hero.frame(height: 130).padding(.top, 4)
+                hero.frame(height: 150).padding(.top, 4)
                 pitch
                 benefits
                 if subscription.offers.isEmpty { unavailable } else { plans }
@@ -73,23 +73,16 @@ struct PaywallView: View {
     }
 
     private var hero: some View {
-        // Three of the paintings fanned like cards on a desk.
-        let names = Array(PromptLibrary.bundled.options(for: .now).map(\.art))
-        return ZStack {
-            ForEach(Array(names.enumerated()), id: \.offset) { index, name in
-                ArtView(name: name)
-                    .frame(width: 92, height: 116)
-                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    .overlay { RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(Theme.card, lineWidth: 3) }
-                    .shadow(color: .black.opacity(0.12), radius: 6, y: 3)
-                    .rotationEffect(.degrees(Double(index - 1) * 8))
-                    .offset(x: CGFloat(index - 1) * 64, y: index == 1 ? -6 : 4)
-                    .zIndex(index == 1 ? 1 : 0)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .accessibilityHidden(true)
+        ArtMarquee(names: PaywallView.wall)
+            .padding(.horizontal, -20)
+            .accessibilityHidden(true)
     }
+
+    /// A stretch of the library to drift past: one painting from each of the coming days.
+    private static let wall: [String] = {
+        let library = PromptLibrary.bundled
+        return (0..<12).compactMap { library.options(for: Days.adding($0 * 3 + 1, to: .now)).first?.art }
+    }()
 
     private var pitch: some View {
         VStack(spacing: 10) {
@@ -113,7 +106,7 @@ struct PaywallView: View {
         VStack(alignment: .leading, spacing: 12) {
             point("Today's prompts and your streak stay free")
             point("Write on any earlier day's prompts")
-            point("Export everything you've written")
+            point("Your writing as a book, with its paintings")
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 8)
@@ -296,6 +289,41 @@ struct PaywallView: View {
             case .notFound: message = String(localized: "No purchase found on this Apple Account")
             case .failed: message = String(localized: "The App Store could not be reached. Try again when you are online.")
             }
+        }
+    }
+}
+
+/// Paintings drifting slowly past, fading out at both edges.
+struct ArtMarquee: View {
+    let names: [String]
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    private let tile = CGSize(width: 104, height: 138)
+    private let gap: CGFloat = 12
+
+    var body: some View {
+        let run = CGFloat(names.count) * (tile.width + gap)
+        TimelineView(.animation(minimumInterval: 1.0 / 60, paused: reduceMotion)) { context in
+            let travelled = reduceMotion ? 0 : CGFloat(context.date.timeIntervalSinceReferenceDate * 14).truncatingRemainder(dividingBy: max(run, 1))
+            // An overlay, so the long row never widens the page.
+            Color.clear.overlay(alignment: .leading) {
+                HStack(spacing: gap) {
+                    ForEach(Array((names + names).enumerated()), id: \.offset) { index, name in
+                        ArtView(name: name)
+                            .frame(width: tile.width, height: tile.height)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .offset(y: index.isMultiple(of: 2) ? -6 : 6)
+                    }
+                }
+                .fixedSize()
+                .offset(x: -travelled)
+            }
+        }
+        .clipped()
+        .mask {
+            LinearGradient(
+                stops: [.init(color: .clear, location: 0), .init(color: .black, location: 0.14), .init(color: .black, location: 0.86), .init(color: .clear, location: 1)],
+                startPoint: .leading, endPoint: .trailing
+            )
         }
     }
 }

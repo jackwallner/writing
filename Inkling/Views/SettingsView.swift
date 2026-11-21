@@ -46,13 +46,17 @@ struct SettingsView: View {
                 }
                 Section {
                     if subscription.isPro {
+                        ShareLink(item: Book(), preview: SharePreview("Inkling")) {
+                            Label("Export Book", systemImage: "book.closed")
+                        }
                         ShareLink(item: journal.export(library: .bundled)) {
-                            Label("Export Writing", systemImage: "square.and.arrow.up")
+                            Label("Export Text", systemImage: "doc.plaintext")
                         }
                     } else {
                         Button { showPaywall = true } label: {
-                            Label("Export Writing", systemImage: "square.and.arrow.up")
+                            Label("Export Book", systemImage: "book.closed")
                         }
+                        .accessibilityIdentifier("settings.book")
                     }
                 }
                 Section {
@@ -75,6 +79,9 @@ struct SettingsView: View {
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("Settings").font(Theme.serif(.headline, weight: .semibold)).foregroundStyle(Theme.ink)
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }.fontWeight(.semibold)
                 }
